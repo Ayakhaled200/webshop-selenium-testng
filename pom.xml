@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>webshop-selenium-testng</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <!-- Java toolchain -->
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Lib versions -->
+        <selenium.version>4.33.0</selenium.version>
+        <testng.version>7.11.0</testng.version>
+        <slf4j.version>2.0.13</slf4j.version>
+
+        <!-- Defaults for runtime system properties (IDE stops whining).
+             You can override any of these on the CLI: -DbaseUrl=... etc. -->
+        <baseUrl>https://automationexercise.com/</baseUrl>
+        <headless>true</headless>
+        <timeoutSeconds>10</timeoutSeconds>
+        <validEmail></validEmail>
+        <validPassword></validPassword>
+
+        <!-- TestNG groups wiring (optional) -->
+        <groups></groups>
+        <excludedGroups></excludedGroups>
+
+        <!-- Optional: point to a suite if/when you add one -->
+        <suiteXmlFile></suiteXmlFile>
+    </properties>
+
+    <dependencies>
+        <!-- Selenium (includes WebDriver + DevTools) -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+
+        <!-- TestNG -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Silence SLF4J warnings in test output -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Faker (you already used it for data; keep if needed) -->
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <!-- Test runner (TestNG via Surefire) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+
+                    <!-- Pick up classes named *Test.java -->
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+
+                    <!-- Pass system props to your code -->
+                    <systemPropertyVariables>
+                        <baseUrl>${baseUrl}</baseUrl>
+                        <headless>${headless}</headless>
+                        <timeoutSeconds>${timeoutSeconds}</timeoutSeconds>
+                        <!-- creds are intentionally blank by default; pass them on CLI -->
+                        <validEmail>${validEmail}</validEmail>
+                        <validPassword>${validPassword}</validPassword>
+                    </systemPropertyVariables>
+
+                    <!-- Wire TestNG groups if you want: -Dgroups=smoke -DexcludedGroups=slow -->
+                    <properties>
+                        <groups>${groups}</groups>
+                        <excludedGroups>${excludedGroups}</excludedGroups>
+                    </properties>
+
+                    <!-- If you add a suite file later, set suiteXmlFile property above and uncomment:
+                    <suiteXmlFiles>
+                      <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
