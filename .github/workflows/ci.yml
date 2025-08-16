@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  smoke:
+    name: Smoke (no creds)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: browser-actions/setup-chrome@v1
+      - name: Run smoke tests
+        run: mvn -B -Dheadless=true -Dgroups=smoke clean test
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-reports
+          path: |
+            target/surefire-reports/**
+            target/screenshots/**
+
+  full-with-creds:
+    name: Full suite (with creds)
+    needs: smoke
+    if: ${{ (secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: browser-actions/setup-chrome@v1
+      - name: Run full suite
+        run: >
+          mvn -B -Dheadless=true
+          -DvalidEmail="${{ secrets.VALID_EMAIL }}"
+          -DvalidPassword="${{ secrets.VALID_PASSWORD }}"
+          clean test
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-reports
+          path: |
+            target/surefire-reports/**
+            target/screenshots/**
