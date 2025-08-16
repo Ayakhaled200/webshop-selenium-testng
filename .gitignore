@@ -1,5 +1,8 @@
 # === Build outputs ===
 target/
+test-output/
+surefire-reports/
+screenshots/
 build/
 out/
 
