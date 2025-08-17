@@ -10,6 +10,9 @@ public final class DriverFactory {
     // One driver per thread; avoids clashes in parallel execution
     private static final ThreadLocal<WebDriver> TL = new ThreadLocal<>();
 
+    public static boolean isStarted() {
+        return TL.get() != null; // or whatever ThreadLocal/WebDriver holder you use
+    }
     // Create the driver once per test (idempotent)
     public static void init(boolean headless) {
         if (TL.get() != null) return;

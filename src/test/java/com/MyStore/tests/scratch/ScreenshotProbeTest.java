@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 public class ScreenshotProbeTest extends BaseTest {
 
-    @Test
+    @Test(enabled = false)
     public void forceFailureToTestScreenshot() {
         // Do something trivial, then fail on purpose
         Assert.fail("Intentional failure to verify ScreenshotOnFailure");
