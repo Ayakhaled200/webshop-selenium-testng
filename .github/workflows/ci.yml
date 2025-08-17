@@ -33,8 +33,11 @@ jobs:
 
   full_with_creds:
     name: Full (with creds)
-    # only run if BOTH secrets exist; also protects PRs from forks
-    if: ${{ (secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    # Map secrets -> env, then use env in the job-level if:
+    env:
+      VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
+      VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
+    if: ${{ (env.VALID_EMAIL != '' && env.VALID_PASSWORD != '') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,8 +48,8 @@ jobs:
           cache: maven
       - name: Run full suite (with creds)
         env:
-          VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
-          VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
+          VALID_EMAIL: ${{ env.VALID_EMAIL }}
+          VALID_PASSWORD: ${{ env.VALID_PASSWORD }}
         run: |
           mvn -B -Dheadless=true \
             -DvalidEmail="$VALID_EMAIL" \
