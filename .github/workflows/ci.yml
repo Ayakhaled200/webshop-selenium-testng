@@ -30,14 +30,10 @@ jobs:
           path: |
             target/surefire-reports/**
             target/screenshots/**
+          if-no-files-found: ignore
 
   full_with_creds:
     name: Full (with creds)
-    # Map secrets -> env, then use env in the job-level if:
-    env:
-      VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
-      VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
-    if: ${{ (env.VALID_EMAIL != '' && env.VALID_PASSWORD != '') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,15 +42,24 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+
+      # Only run tests when both secrets are present
       - name: Run full suite (with creds)
+        if: ${{ secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '' }}
         env:
-          VALID_EMAIL: ${{ env.VALID_EMAIL }}
-          VALID_PASSWORD: ${{ env.VALID_PASSWORD }}
+          VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
+          VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
         run: |
           mvn -B -Dheadless=true \
             -DvalidEmail="$VALID_EMAIL" \
             -DvalidPassword="$VALID_PASSWORD" \
             clean test
+
+      # Friendly message if secrets aren’t configured
+      - name: Skip (no creds configured)
+        if: ${{ secrets.VALID_EMAIL == '' || secrets.VALID_PASSWORD == '' }}
+        run: echo "Skipping full_with_creds: VALID_EMAIL/VALID_PASSWORD secrets not set."
+
       - name: Upload full reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,3 +68,4 @@ jobs:
           path: |
             target/surefire-reports/**
             target/screenshots/**
+          if-no-files-found: ignore
