@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI
 
 on:
@@ -18,7 +19,7 @@ jobs:
           cache: maven
       - name: Run smoke suite
         run: mvn -B -Dheadless=true -Dgroups=smoke clean test
-      - name: Upload reports
+      - name: Upload reports (smoke)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -27,11 +28,13 @@ jobs:
             target/surefire-reports/**
             target/screenshots/**
 
-  full-with-creds:
+  full:
     name: Full (with creds)
-    # ⬇⬇ FIXED LINE — must be inside ${{ ... }}
-    if: ${{ secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '' }}
     runs-on: ubuntu-latest
+    env:
+      # expose secrets as env so we can reference them without hitting the parser error
+      VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
+      VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -39,13 +42,21 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+
+      - name: Skip if creds not set
+        if: ${{ env.VALID_EMAIL == '' || env.VALID_PASSWORD == '' }}
+        run: |
+          echo "VALID_EMAIL or VALID_PASSWORD not set; skipping full suite."
+          exit 0
+
       - name: Run full suite
         run: |
           mvn -B -Dheadless=true \
-            -DvalidEmail="${{ secrets.VALID_EMAIL }}" \
-            -DvalidPassword="${{ secrets.VALID_PASSWORD }}" \
+            -DvalidEmail="${{ env.VALID_EMAIL }}" \
+            -DvalidPassword="${{ env.VALID_PASSWORD }}" \
             clean test
-      - name: Upload reports
+
+      - name: Upload reports (full)
         if: always()
         uses: actions/upload-artifact@v4
         with:
