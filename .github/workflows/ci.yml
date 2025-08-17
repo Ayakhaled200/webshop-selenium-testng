@@ -16,7 +16,7 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Run smoke
+      - name: Run smoke suite
         run: mvn -B -Dheadless=true -Dgroups=smoke clean test
       - name: Upload reports
         if: always()
@@ -28,9 +28,9 @@ jobs:
             target/screenshots/**
 
   full-with-creds:
-    # Only runs if BOTH secrets exist and are non-empty
-    if: ${{ secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '' }}
     name: Full (with creds)
+    # ⬇⬇ FIXED LINE — must be inside ${{ ... }}
+    if: ${{ secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
