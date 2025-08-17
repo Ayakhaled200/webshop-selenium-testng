@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,26 +28,32 @@ jobs:
             target/surefire-reports/**
             target/screenshots/**
 
-  # Optional: same smoke suite but WITH creds (only runs if secrets exist)
   smoke-with-creds:
-    if: ${{ secrets.VALID_EMAIL != '' && secrets.VALID_PASSWORD != '' }}
     runs-on: ubuntu-latest
+    # Map secrets into env so we can use them in step-level conditions
+    env:
+      VALID_EMAIL: ${{ secrets.VALID_EMAIL }}
+      VALID_PASSWORD: ${{ secrets.VALID_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
 
-      - name: Run smoke with creds
+      - name: Run smoke WITH creds
+        if: ${{ env.VALID_EMAIL != '' && env.VALID_PASSWORD != '' }}
         run: |
           mvn -B -Dheadless=true \
             -Dgroups=smoke \
-            -DvalidEmail="${{ secrets.VALID_EMAIL }}" \
-            -DvalidPassword="${{ secrets.VALID_PASSWORD }}" \
+            -DvalidEmail="${{ env.VALID_EMAIL }}" \
+            -DvalidPassword="${{ env.VALID_PASSWORD }}" \
             clean test
+
+      - name: Skip (no creds configured)
+        if: ${{ !(env.VALID_EMAIL != '' && env.VALID_PASSWORD != '') }}
+        run: echo "Skipping smoke-with-creds: VALID_EMAIL/VALID_PASSWORD secrets not set."
 
       - name: Upload reports
         if: always()
