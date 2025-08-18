@@ -162,7 +162,6 @@ mvn --% "-Dtest=com.MyStore.tests.smoke.products.ProductSmokeTest#searchFindsExp
 | …        | *(Other test cases not shown here: filters, reviews, invalid logins, etc.)* | —                             |
 
 ---
----
 
 ## 🧰 GitHub Actions (CI)
 
